@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"		   
+		   width="590" height="274" creationComplete="init()"
+		   addedToStage="dispatchEvent(new Event('configureIOC', true))">
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+
+		.scale {
+			overSkin:Embed(source="assets/images/icon1.png");
+			upSkin:Embed(source="assets/images/icon1.png");
+			downSkin:Embed(source="assets/images/icon1_h.png");		
+		}
+		.reduce{
+			overSkin:Embed(source="assets/images/icon2.png");
+			upSkin:Embed(source="assets/images/icon2.png");
+			downSkin:Embed(source="assets/images/icon2_h.png");			
+		}
+		.leftRotation{
+			overSkin:Embed(source="assets/images/icon3.png");
+			upSkin:Embed(source="assets/images/icon3.png");
+			downSkin:Embed(source="assets/images/icon3_h.png");			
+		}
+		.rightRotation{
+			overSkin:Embed(source="assets/images/icon4.png");
+			upSkin:Embed(source="assets/images/icon4.png");
+			downSkin:Embed(source="assets/images/icon4_h.png");			
+		}
+		.up {
+			overSkin:Embed(source="assets/images/icon_1.png");
+			upSkin:Embed(source="assets/images/icon_1.png");
+			downSkin:Embed(source="assets/images/icon_1_h.png");			
+		}
+		.left {
+			overSkin:Embed(source="assets/images/icon_4.png");
+			upSkin:Embed(source="assets/images/icon_4.png");
+			downSkin:Embed(source="assets/images/icon_4_h.png");			
+		}
+		.down {
+			overSkin:Embed(source="assets/images/icon_3.png");
+			upSkin:Embed(source="assets/images/icon_3.png");
+			downSkin:Embed(source="assets/images/icon_3_h.png");			
+		}
+		.right{
+			overSkin:Embed(source="assets/images/icon_2.png");
+			upSkin:Embed(source="assets/images/icon_2.png");
+			downSkin:Embed(source="assets/images/icon_2_h.png");			
+		}
+		.yj {
+			overSkin:Embed(source="assets/images/yj_btn.png");
+			upSkin:Embed(source="assets/images/yj_btn.png");
+			downSkin:Embed(source="assets/images/yj_btn_h.png");
+		}		
+		.weibo {
+			overSkin:Embed(source="assets/images/wb_btn.png");
+			upSkin:Embed(source="assets/images/wb_btn.png");
+			downSkin:Embed(source="assets/images/wb_btn_h.png");			
+		}
+		.photo {
+			overSkin:Embed(source="assets/images/photo_btn.png");
+			upSkin:Embed(source="assets/images/photo_btn.png");
+			downSkin:Embed(source="assets/images/photo_btn_h.png");			
+		}
+		.del {
+			overSkin:Embed(source="assets/images/del_btn.png");
+			upSkin:Embed(source="assets/images/del_btn.png");
+			downSkin:Embed(source="assets/images/del_btn_h.png");
+		}
+		
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import cn.ideasoft.button.ImageButtonStyle;
+			import cn.ideasoft.event.AppEvent;
+			
+			import org.spicefactory.parsley.core.context.Context;
+			
+			[MessageDispatcher]
+			public var dispatcher:Function;			
+			
+			[Inject]
+			public var context:Context;
+			
+			public function init():void{
+				
+			}
+			//向上移动
+			public function onUpMove():void{
+				dispatcher(new Event("stickerPhoto.onUpMove"));
+			}
+			//向下移动
+			public function onDownMove():void{
+				dispatcher(new Event("stickerPhoto.onDownMove"));
+			}
+			//向左移动
+			public function onLeftMove():void{
+				dispatcher(new Event("stickerPhoto.onLeftMove"));
+			}
+			//向右移动
+			public function onRightMove():void{
+				dispatcher(new Event("stickerPhoto.onRightMove"));
+			}
+			//左旋转
+			public function onLeftRotation():void
+			{
+				dispatcher(new Event("stickerPhoto.onLeftRotation"));
+			}
+			//右旋转
+			public function onRightRotation():void
+			{
+				dispatcher(new Event("stickerPhoto.onRightRotation"));
+			}
+			//放大
+			public function onScale():void{
+				dispatcher(new Event("stickerPhoto.onScale"));
+			}
+			//缩小			
+			public function onReduce():void {
+				dispatcher(new Event("stickerPhoto.onReduce"));
+			}
+			public function clickSelectYanJing():void{
+				dispatcher(new Event("clickSelectYanJing"));
+			}
+			public function clickSelectWeiBo():void {
+				dispatcher(new Event("clickSelectWeiBo"));
+			}
+			public function clickSelectPhoto():void{
+				dispatcher(new Event("clickSelectPhoto"));
+			}
+			public function clickDelete():void{
+				dispatcher(new Event("clickDeleteSticker"));
+			}
+			
+		]]>
+	</fx:Script>
+
+	<mx:Button x="122" y="154"  click="onScale();" styleName="scale"/>
+	<mx:Button x="175" y="154"  click="onReduce();" styleName="reduce"/>
+	<mx:Button x="122" y="210"  click="onLeftRotation();" styleName="leftRotation"/>
+	<mx:Button x="175" y="210"  click="onRightRotation();" styleName="rightRotation"/>
+	
+	<mx:Image x="12" y="154" source="@Embed('assets/images/icon.png')"/>
+	<mx:Button x="55" y="163"  click="onUpMove()" styleName="up"/>
+	<mx:Button x="21" y="195"  click="onLeftMove()" styleName="left"/>
+	<mx:Button x="55" y="231"  click="onDownMove()" styleName="down"/>
+	<mx:Button x="88" y="195"  click="onRightMove()" styleName="right"/>
+	<mx:Button x="227" y="154" width="55" height="28" click="clickSelectYanJing()" styleName="yj"/>
+	<mx:Button x="226" y="179" width="55" height="28" click="clickSelectWeiBo()" styleName="weibo"/>
+	<mx:Button x="227" y="206" width="55" height="28" click="clickSelectPhoto()" styleName="photo"/>
+	<mx:Button x="226" y="233" width="55" height="28" click="clickDelete()" styleName="del"/>	
+		
+	
+</mx:Canvas>

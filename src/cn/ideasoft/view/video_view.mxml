@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" width="428" height="274" 
+				creationComplete="init()" headerHeight="0" addedToStage="dispatchEvent(new Event('configureIOC', true))">
+	<mx:Script>
+		<![CDATA[
+			import cn.ideasoft.event.AppEvent;
+			import cn.ideasoft.event.PopUpEvent;
+			
+			import com.adobe.serialization.json.JSON;
+			import com.hurlant.util.Base64;
+			import com.riaoo.net.FileUpload;
+			
+			import mx.controls.Alert;
+			import mx.graphics.ImageSnapshot;
+			import mx.graphics.codec.JPEGEncoder;
+			import mx.managers.PopUpManager;
+			
+			import org.spicefactory.parsley.core.context.Context;			
+		
+			[Inject]
+			public var context:Context;			
+			
+			[MessageDispatcher]
+			public var dispatcher:Function;		
+			
+			
+			private var m_camera:Camera; //摄像头
+			private var m_localVideo:Video; //定义一个本地视频 
+			private var m_pictureBitmapData:BitmapData //定义视频截图 
+			private var m_isReading:Boolean = false;
+			
+			private var CAMERA_WIDTH:int = 320;
+			private var CAMERA_HEIGHT:int = 240;			
+		
+			private var takePhotoData:BitmapData;
+		
+			// 初始化
+			private function init():void
+			{
+				if(!Camera.isSupported){
+					Alert.show("无法找到摄像头.");
+					return;
+				}else{
+					m_isReading = true;
+					m_camera = Camera.getCamera("0");  
+					if(m_camera == null && Camera.names.length <= 0 )  
+					{  
+						Alert.show("没有找到摄像头，是否重新查找!", "提示");
+						return;  
+					}
+					if (m_camera != null) {//指定是否播放来自摄像头的视频流。						
+						
+						m_camera.setMode(CAMERA_WIDTH,CAMERA_HEIGHT,30); 
+						m_camera.setKeyFrameInterval(60); 
+						m_camera.setQuality(144,85); //图像质量
+						
+						m_localVideo = new Video();
+						m_localVideo.width = CAMERA_WIDTH;
+						m_localVideo.height = CAMERA_HEIGHT;
+						m_localVideo.attachCamera(m_camera);
+						t_vd_Video.addChild(m_localVideo);
+
+					}
+				}
+			}	
+			
+			private function back():void
+			{
+				if(m_camera != null){
+					t_vd_Video.attachCamera(null);
+				}
+				
+				PopUpManager.removePopUp(this);			
+				
+			}
+			
+			//拍照按钮事件，进行视频截图 
+			private function SnapshotPicture():void 
+			{ 
+				
+				if(m_isReading){
+					m_pictureBitmapData=ImageSnapshot.captureBitmapData(t_vd_Video);     				
+					saveImage(checkIntersection()); 					
+				}				
+			} 		
+			
+			private function saveImage(bitmapData:BitmapData):void{//保存图片 
+				try{ 					
+					takePhotoData = bitmapData;
+					dispatcher(new AppEvent("uploadPhoto.bitmap",takePhotoData));			
+				}catch(e:Error){ 
+					
+				} 
+				
+			} 
+			
+			private function checkIntersection():BitmapData {                 			
+
+				var bitmapData1:BitmapData=new BitmapData(t_vd_Video.width,t_vd_Video.height,true,0); 
+				var rec:Rectangle=new Rectangle(0,0,t_vd_Video.width,t_vd_Video.height); 
+				var m:Matrix=new Matrix(1,0,0,1,-t_vd_Video.x,-t_vd_Video.y);
+				bitmapData1.draw(t_vd_Video,m,null,null,rec); 
+				var bitmap:Bitmap =new Bitmap(bitmapData1);
+				t_img_Picture.source = bitmap;
+				
+				t_vd_Video.visible=false; 
+				t_img_Picture.visible=true; 
+				
+				t_img_Picture.doubleClickEnabled=true; 
+				t_img_Picture.addEventListener(MouseEvent.DOUBLE_CLICK,rePhoto,false,0,true); 				
+				
+				this.initialize(); 
+				return bitmapData1;
+
+			}
+
+			private function rePhoto(object:Object=null):void
+			{ 
+				t_img_Picture.removeEventListener(MouseEvent.DOUBLE_CLICK,rePhoto); 
+				t_img_Picture.visible=true; 
+				t_vd_Video.visible=false;				
+
+			} 
+
+			
+			//检测摄像头权限事件  
+			private function onCameraStatusHandler(event:StatusEvent):void  
+			{  
+				if(!m_camera.muted)  
+				{  
+//					snapshotBtn.enabled = true;  
+				}  
+				else  
+				{  
+					Alert.show("无法链接到活动摄像头，是否重新检测，请充许使用摄像头！", "提示");  
+				}  
+				m_camera.removeEventListener(StatusEvent.STATUS, onCameraStatusHandler);  
+			} 			
+			
+		]]>
+	</mx:Script>
+	<mx:Canvas width="398" height="100%">
+		<mx:VideoDisplay id="t_vd_Video" width="320" height="100%" />		
+		<mx:Image id="t_img_Picture" width="320" height="100%" horizontalCenter="-31" verticalCenter="0" visible="false"/>
+		<mx:Button id="snapshotBtn" x="328" y="222" width="57" height="26" label="拍照" click="SnapshotPicture()" fontSize="12"/>
+		<mx:Button x="328" y="188" width="57" height="26" label="返回" click="back()" fontSize="12"/>
+	</mx:Canvas>
+	
+	
+</mx:TitleWindow>

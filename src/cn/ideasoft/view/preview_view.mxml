@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="420" height="270"
+		  creationComplete="init()" headerHeight="2" addedToStage="dispatchEvent(new Event('configureIOC', true))"
+		 >
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import cn.ideasoft.event.AppEvent;
+			
+			import com.riaoo.adjustDisplayObject.filters.DisplayObjectFilter;
+			
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			import org.spicefactory.parsley.core.context.Context;
+			
+			[MessageDispatcher]
+			public var dispatcher:Function;				
+
+			[Inject]
+			public var context:Context;			
+			
+			private var loader:Loader = new Loader();
+			
+			public function init():void{
+				dispatcher(new AppEvent("previewShow.onPreviewOutput",null));
+			}
+			
+			[MessageHandler(selector="previewShow.previewPhoto")]				
+			public function onPreview(event:AppEvent):void{
+				canvas.source = new Bitmap(event.data as BitmapData);
+			}
+			
+			public function close():void{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</fx:Script>
+	<mx:Canvas width="385" height="242">
+		<mx:Image x="2" y="2" width="320" height="240" source="assets/images/canvas2.png" />
+		<mx:Image x="2" y="2" width="320" id="canvas" height="240" />
+		<mx:Button x="328" y="10" label="关闭" click="close();"/>				
+	</mx:Canvas>	
+	
+</mx:TitleWindow>

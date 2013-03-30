@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:myView="cn.ideasoft.view.*"
+			   xmlns:code="http://code.google.com/p/flexlib/"
+			   preloader="cn.ideasoft.common.PreLoading"
+			   width="941" height="274"
+			   preinitialize="preInit();" 
+			   addedToStage="init();"
+			   xmlns:sf="http://www.spicefactory.org/parsley">
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import cn.ideasoft.event.AppEvent;
+			import cn.ideasoft.view.preview_view;
+			import cn.ideasoft.view.sticker_view;
+			
+			import com.adobe.serialization.json.JSON;
+			import com.riaoo.net.FileUpload;
+			
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			import org.spicefactory.parsley.core.context.Context;
+			import org.spicefactory.parsley.core.context.DynamicContext;
+			import org.spicefactory.parsley.flex.FlexContextBuilder;
+			
+			
+			[MessageDispatcher]
+			public var dispatcher:Function;
+			
+			private var params:Object;
+			private var context:Context;
+			//private var dynamicContext:DynamicContext;			
+			private var allowDomain:String = "event.ftms.com.cn";
+		
+			private var uploadLoader:URLLoader = new URLLoader();
+						
+			private function preInit():void{
+				context = FlexContextBuilder.build(BeansConfig,this);		
+//				dynamicContext = context.createDynamicContext();				
+			}
+			
+			private function init():void
+			{							
+				Security.allowDomain(allowDomain,"nanrenbang.com");
+				Security.allowInsecureDomain(allowDomain,"nanrenbang.com");				
+				
+				dispatchEvent(new Event('configureIOC', true));						
+				this.addEventListener(MouseEvent.CLICK,onMouseClick);	
+				
+			}
+			[MessageHandler(selector="previewShow.onPreviewOutput")]
+			public function onPreviewOutput(event:AppEvent):void{
+				
+				dispatcher(new AppEvent("previewShow.previewPhoto",sticker.outputPreviewImage()));
+			}
+
+			[MessageHandler(selector="previewSticker.onShow")]
+			public function onPreviewShow(event:AppEvent):void{
+				var bytes:ByteArray = sticker.outputImage();
+				trace("main bytes:"+bytes.length);
+				//event.ftms.com.cn/nanrenbang
+				//http://event.ftms.com.cn/nanrenbang/api.php?m=save&
+				//FileUpload.uploadFile(uploadLoader,"http://nanrenbang.com/api.php?m=temp",bytes,"file","test.jpg");				
+//				var req:URLRequest = new URLRequest(encodeURI("http://event.ftms.com.cn/nanrenbang/api.php?m=save&name="+event.data as String));
+//				req.data = bytes;
+//				req.method = URLRequestMethod.POST;
+//				req.contentType = "application/octet-stream";
+//				
+//				uploadLoader.dataFormat = URLLoaderDataFormat.BINARY;
+//				uploadLoader.load(req);
+//				uploadLoader.addEventListener(Event.COMPLETE,onUploadReponse);
+			}
+			public function onUploadReponse(event:Event):void{
+				var l:URLLoader = event.target as URLLoader; 					
+				trace("result:"+l.data);
+				//Alert.show(""+l.data as String);
+				var o:* = JSON.decode(l.data); 
+				if(o.status){
+					Alert.show("您已经上传成功！");
+				}
+			}			
+			
+			[MessageHandler(selector="selectWeiBo.bitmap")]
+			public function onSelectWeiBo(event:AppEvent):void{
+				var bmp:BitmapData = event.data as BitmapData;
+				sticker.addWeiBo(bmp);
+			}
+			[MessageHandler(selector="selectYanJing.bitmap")]
+			public function onSelectYanJing(event:AppEvent):void{
+				var bmp:BitmapData = event.data as BitmapData;
+				sticker.addYanJing(bmp);
+			}			
+
+			[MessageHandler(selector="selectTemplate.bitmap")]
+			public function onSelectTemplate(event:AppEvent):void{
+				var bmp:BitmapData = event.data as BitmapData;
+				sticker.addTemplate(bmp);
+			}			
+			
+			[MessageHandler(selector="uploadPhoto.bitmap")]
+			public function uploadPhoto(event:AppEvent):void {
+				//sticker_main.source = event.data as Bitmap;
+				var bmp:BitmapData = event.data as BitmapData;
+				sticker.addPhoto(bmp);
+			}
+			
+			//向上移动
+			[MessageHandler(selector="stickerPhoto.onUpMove")]
+			public function onUpMove(event:Event):void{
+				//Alert.show("向上移动.");
+				sticker.onUpMove();
+			}
+			//向下移动
+			[MessageHandler(selector="stickerPhoto.onDownMove")]			
+			public function onDownMove(event:Event):void{
+				//Alert.show("向下移动.");
+				sticker.onDownMove();
+			}
+			//向左移动
+			[MessageHandler(selector="stickerPhoto.onLeftMove")]			
+			public function onLeftMove(event:Event):void{
+				sticker.onLeftMove();
+			}
+			//向右移动
+			[MessageHandler(selector="stickerPhoto.onRightMove")]			
+			public function onRightMove(event:Event):void{
+				sticker.onRightMove();
+			}
+			//左旋转
+			[MessageHandler(selector="stickerPhoto.onLeftRotation")]
+			public function onLeftRotation(event:Event):void
+			{
+				sticker.onLeftRotation();
+
+			}
+			//右旋转
+			[MessageHandler(selector="stickerPhoto.onRightRotation")]			
+			public function onRightRotation(event:Event):void
+			{
+				sticker.onRightRotation();				
+			}
+			//放大
+			[MessageHandler(selector="stickerPhoto.onScale")]			
+			public function onScale(event:Event):void{
+				//Alert.show("放大.");
+				sticker.onScale();
+			}
+			//缩小
+			[MessageHandler(selector="stickerPhoto.onReduce")]			
+			public function onReduce(event:Event):void {
+				//Alert.show("缩小.");
+				sticker.onReduce();
+			}	
+			//素材特效
+			[MessageHandler(selector="stickerPhoto.onSuMiaoTeXiao")]	
+			public function onSuMiaoTeXiao(event:Event):void{
+				//Alert.show("素材特效.");
+				sticker.onSuMiaoTeXiao();
+			}
+			//LOMO特效
+			[MessageHandler(selector="stickerPhoto.onSuiCaiTeXiao")]	
+			public function onSuiCaiTeXiao(event:Event):void{
+				//Alert.show("LOMO特效");
+				sticker.onSuiCaiTeXiao();
+			}
+			//黑白特效
+			[MessageHandler(selector="stickerPhoto.onHeBaiTeXiao")]	
+			public function onHeBaiTeXiao(event:Event):void{
+				//Alert.show("黑白特效.");
+				sticker.onHeBaiTeXiao();
+			}				
+			public function onMouseClick(event:MouseEvent):void{
+				sticker.mouseClickLayer(event);
+			}	
+			[MessageHandler(selector="clickSelectYanJing")]
+			public function clickSelectYanJing(event:Event):void{
+				sticker.clickSelectYanJing();
+			}
+			[MessageHandler(selector="clickSelectWeiBo")]
+			public function clickSelectWeiBo(event:Event):void {
+				sticker.clickSelectWeiBo();
+			}
+			[MessageHandler(selector="clickSelectPhoto")]
+			public function clickSelectPhoto(event:Event):void{
+				sticker.clickSelectPhoto();
+			}
+			[MessageHandler(selector="clickDeleteSticker")]
+			public function clickDelete(event:Event):void{
+				sticker.clickDeleteSticker();
+			}	
+			[MessageHandler(selector="clearSticker")]			
+			public function clearSticker(event:Event):void{
+				sticker.clear();
+			}
+			
+		]]>
+	</fx:Script>
+	<mx:Image x="0" y="-1" source="@Embed('assets/images/cavbg.png')"/>
+	<mx:Canvas id="sticker_canvas" x="11" y="16" width="321" height="241" borderThickness="1" borderColor="#FFFFFF" borderSkin="cn.ideasoft.DashBorder">
+		<myView:sticker_view id="sticker" x="0" y="0" width="320" height="240">			
+		</myView:sticker_view>
+	</mx:Canvas>
+	<mx:ViewStack id="menuArea" x="347" y="-1">
+		<myView:first_view id="first_view" width="590" height="274" x="345" y="0"/>
+		<myView:two_view id="two_view" width="590" height="274" x="345" y="0"/>
+	</mx:ViewStack>
+</s:Application>

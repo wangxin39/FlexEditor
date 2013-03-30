@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   xmlns:myView="cn.ideasoft.view.*"
+		   xmlns:containers="com.dougmccune.containers.*"
+		   width="590" height="274" creationComplete="init()" 
+		   addedToStage="dispatchEvent(new Event('configureIOC', true))">
+	<fx:Script>
+		<![CDATA[
+			import cn.ideasoft.button.ImageButtonStyle;
+			import cn.ideasoft.event.AppEvent;
+			
+			import com.riaoo.net.FileUpload;
+			
+			import mx.containers.ViewStack;
+			import mx.controls.Alert;
+			import mx.graphics.codec.JPEGEncoder;
+			import mx.managers.PopUpManager;
+			
+			import org.spicefactory.parsley.core.context.Context;
+			
+			[Inject]
+			public var context:Context;			
+			
+			[MessageDispatcher]
+			public var dispatcher:Function;				
+			
+			
+			private var loaderImage:Loader = new Loader();
+			
+			private var vs:ViewStack;
+			public function init():void{
+				vs = this.parent as ViewStack;	
+				
+				loaderImage.contentLoaderInfo.addEventListener(Event.COMPLETE,loadImage);
+			}			
+			
+			private function getChild(str:String):Object  //这段代码是为了获得指定页面对应的对象
+			{
+				var obj:Object = null;
+				for each(obj in vs.getChildren())  //遍历vs中的所有子组件(即所有页面)，页面不会太多，顶多一二十个，所以这个方法不会太耗时
+				{
+					if(obj.name === str) //如果是想找的页面，就返回这个对象。比如想找到welcome.mxml，则令str="welcome"
+					{
+						break;
+					}
+				}
+				return obj;
+			}			
+			
+			public function onPreviewView():void{
+				
+				if(editAuthor.text != '' && editAuthor.text.length <= 20){					
+					var preview:preview_view = new preview_view();
+					preview.addEventListener(Event.REMOVED,onUploadImage);
+					context.viewManager.addViewRoot(preview);
+					PopUpManager.addPopUp(preview,this.parent);
+					PopUpManager.centerPopUp(preview);					
+				}else{
+					Alert.show("请输入作品名称！");
+				}				
+
+			}
+			public function onUploadImage(event:Event):void{
+				//上传
+				var bitmapData:BitmapData = new BitmapData(1024,768,true,0x00000000);				
+				
+				var jpg:JPEGEncoder=new JPEGEncoder(100);
+				var imgBye:ByteArray=jpg.encode(bitmapData);
+				
+				//var file:FileReference=new FileReference();
+				//file.save(imgBye,"video_temp.jpg");	
+				//FileUpload.uploadFile(uploadLoader,"http://event.ftms.com.cn/nanrenbang/api.php?m=temp",imgBye,"file","file");
+				if(editAuthor.text != ''){
+					dispatcher(new AppEvent("previewSticker.onShow",editAuthor.text));					
+				}else{
+					Alert.show("请输入作品名称！");
+				}
+
+				
+			}
+			
+			public function back():void {				
+				dispatcher(new Event("clearSticker"));				
+				var obj:Object = getChild("first_view");				
+				vs.selectedChild = obj as mx.containers.Canvas;
+				
+			}	
+			public function onSuMiaoTeXiao():void{
+				dispatcher(new Event("stickerPhoto.onSuMiaoTeXiao"));
+			}
+			public function onSuiCaiTeXiao():void{
+				dispatcher(new Event("stickerPhoto.onSuiCaiTeXiao"));
+			}
+			public function onHeBaiTeXiao():void{
+				dispatcher(new Event("stickerPhoto.onHeBaiTeXiao"));
+			}			
+			
+			private var template:Array = ["assets/images/xk1.png","assets/images/xk2.png","assets/images/xk3.png","assets/images/xk4.png","assets/images/xk5.png","assets/images/xk6.png"];
+			
+			public function onSelect(type:int):void{
+				loaderImage.load(new URLRequest(template[type] as String));	
+			}
+			public function loadImage(event:Event):void{
+				
+				var bmp:BitmapData = new BitmapData(loaderImage.width,loaderImage.height,true,0x00000000);
+				bmp.draw(loaderImage);				
+				dispatcher(new AppEvent("selectTemplate.bitmap",bmp));
+			}				
+		]]>
+	</fx:Script>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		.xk1 {
+			overSkin:Embed(source="assets/images/xk1_btn.png");
+			upSkin:Embed(source="assets/images/xk1_btn.png");
+			downSkin:Embed(source="assets/images/xk1_btn_h.png");		
+		}		
+		.xk2 {
+			overSkin:Embed(source="assets/images/xk2_btn.png");
+			upSkin:Embed(source="assets/images/xk2_btn.png");
+			downSkin:Embed(source="assets/images/xk2_btn_h.png");				
+		}
+		.xk3 {
+			overSkin:Embed(source="assets/images/xk3_btn.png");
+			upSkin:Embed(source="assets/images/xk3_btn.png");
+			downSkin:Embed(source="assets/images/xk3_btn_h.png");				
+		}
+		.xk4 {
+			overSkin:Embed(source="assets/images/xk4_btn.png");
+			upSkin:Embed(source="assets/images/xk4_btn.png");
+			downSkin:Embed(source="assets/images/xk4_btn_h.png");				
+		}		
+		.xk5 {
+			overSkin:Embed(source="assets/images/xk5_btn.png");
+			upSkin:Embed(source="assets/images/xk5_btn.png");
+			downSkin:Embed(source="assets/images/xk5_btn_h.png");				
+		}	
+		.xk6 {
+			overSkin:Embed(source="assets/images/xk6_btn.png");
+			upSkin:Embed(source="assets/images/xk6_btn.png");
+			downSkin:Embed(source="assets/images/xk6_btn_h.png");				
+		}	
+		.wb3Btn {
+			overSkin:Embed(source="assets/images/wb3_b.png");
+			upSkin:Embed(source="assets/images/wb3_b.png");
+			downSkin:Embed(source="assets/images/wb3_b_h.png");				
+		}			
+		.suicaiBtn {
+			overSkin:Embed(source="assets/images/bot_5.png");
+			upSkin:Embed(source="assets/images/bot_5.png");
+			downSkin:Embed(source="assets/images/bot_5_h.png");				
+		}	
+		.sumiaoBtn {
+			overSkin:Embed(source="assets/images/bot_4.png");
+			upSkin:Embed(source="assets/images/bot_4.png");
+			downSkin:Embed(source="assets/images/bot_4_h.png");				
+		}	
+		.hebaiBtn {
+			overSkin:Embed(source="assets/images/bot_3.png");
+			upSkin:Embed(source="assets/images/bot_3.png");
+			downSkin:Embed(source="assets/images/bot_3_h.png");				
+		}
+	</fx:Style>
+	<mx:TextInput x="13" y="37" width="219" id="editAuthor"/>
+	<myView:menu_view>
+	</myView:menu_view>
+	<mx:Image x="342" y="224" source="@Embed('assets/images/bot_2.png')" click="back()">
+	</mx:Image>
+	<mx:Image x="469" y="224" source="@Embed('assets/images/bot_1.png')" click="onPreviewView();">
+	</mx:Image>
+	<mx:Button x="422" y="181" width="80" height="26" styleName="sumiaoBtn" click="onSuMiaoTeXiao()"/>
+	<mx:Button x="338" y="181" width="80" height="26" styleName="suicaiBtn" click="onSuiCaiTeXiao()"/>
+	<mx:Button x="505" y="181" width="80" height="26" styleName="hebaiBtn" click="onHeBaiTeXiao()"/>
+	<mx:Image x="10" y="125" source="@Embed('assets/images/adjust_photo.png')"/>
+	<mx:Image x="12" y="65" source="@Embed('assets/images/zuopin_text.png')"/>
+	<mx:Image x="7" y="12" source="@Embed('assets/images/zuopin_name.png')"/>
+	<mx:Image x="328" y="153" source="@Embed('assets/images/photo_title.png')"/>
+	<mx:Image x="257" y="11" source="@Embed('assets/images/temple_title.png')"/>
+	<mx:Canvas x="245" y="37" width="342" height="91" borderSides="solid" borderThickness="1">
+		<containers:CoverFlowContainer id="coverflow" width="100%" height="100%" 
+		horizontalGap="40"   
+		segments="6" reflectionEnabled="true">
+			<mx:HBox width="105" height="80" borderStyle="solid" borderThickness="1">  
+				<mx:Button x="277" y="59" width="103" height="76" id="select_xk1" click="onSelect(0)" styleName="xk1"/>
+			</mx:HBox>  
+			<mx:HBox width="105" height="80" borderStyle="solid" borderThickness="1">  
+				<mx:Button x="336" y="58" width="103" height="76" id="select_xk2" click="onSelect(1)" styleName="xk2"/>
+			</mx:HBox>  
+			<mx:HBox width="105" height="80" borderStyle="solid" borderThickness="1">  
+				<mx:Button x="395" y="58" width="103" height="76" id="select_xk3" click="onSelect(2)" styleName="xk3"/>
+			</mx:HBox>  
+			<mx:HBox width="105" height="80" borderStyle="solid" borderThickness="1">  				
+				<mx:Button x="453" y="58" width="103" height="76" id="select_xk4" click="onSelect(3)" styleName="xk4"/>
+			</mx:HBox>  
+			<mx:HBox width="105" height="80" borderStyle="solid" borderThickness="1">  
+				<mx:Button x="511" y="58" width="103" height="76" id="select_xk5" click="onSelect(4)" styleName="xk5"/>
+			</mx:HBox>  
+			<mx:HBox width="105" height="80" borderStyle="solid" borderThickness="1">  
+				<mx:Button x="511" y="58" width="103" height="76" id="select_xk6" click="onSelect(5)" styleName="xk6"/>
+			</mx:HBox> 
+		</containers:CoverFlowContainer>
+	</mx:Canvas>
+
+</mx:Canvas>

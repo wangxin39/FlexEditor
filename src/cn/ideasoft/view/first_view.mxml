@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   xmlns:myView="cn.ideasoft.view.*"
+		   width="590" height="274" creationComplete="init()"
+		   addedToStage="dispatchEvent(new Event('configureIOC', true))">
+	<fx:Script>
+		<![CDATA[
+			import cn.ideasoft.button.ImageButtonStyle;
+			import cn.ideasoft.event.AppEvent;
+			
+			import mx.containers.ViewStack;
+			import mx.controls.Alert;
+			import mx.core.Application;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import org.spicefactory.parsley.core.context.Context;
+			
+			import spark.components.Application;
+
+			
+			[MessageDispatcher]
+			public var dispatcher:Function;			
+			
+			[Inject]
+			public var context:Context;				
+			
+			private var vs:ViewStack;			
+			
+			private var fileReference:FileReference=new FileReference();
+			private var byteArray:ByteArray;
+			private var bitmapData:BitmapData;
+			private var loader:Loader=new Loader();	
+			
+			private var loaderImage1:Loader = new Loader();
+			private var loaderImage2:Loader = new Loader();	
+			
+			public function init():void{
+				vs = this.parent as ViewStack;
+				fileReference.addEventListener(Event.COMPLETE,fileReferenceCompleteHandler);
+				
+				loaderImage1.contentLoaderInfo.addEventListener(Event.COMPLETE,onLoadImage1);				
+				loaderImage2.contentLoaderInfo.addEventListener(Event.COMPLETE,onLoadImage2);								
+			}
+			
+			public function takePhoto():void{
+					
+				var myWin:video_view = new video_view();
+				context.viewManager.addViewRoot(myWin);
+				PopUpManager.addPopUp(myWin,this);
+				PopUpManager.centerPopUp(myWin);
+				
+				
+			}					
+			
+			public function uploadPhoto():void{				
+				fileReference.browse();
+				fileReference.addEventListener(Event.SELECT,fileReferenceSelectHandler);				
+			}
+			
+			private function fileReferenceCompleteHandler(e:Event):void
+			{
+				byteArray = fileReference.data;
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,loaderCompleteHandler);
+				loader.loadBytes(byteArray);
+			}
+			private function loaderCompleteHandler(e:Event):void
+			{
+				var bitmap:Bitmap = Bitmap(loader.content);
+				bitmapData = bitmap.bitmapData;
+				dispatcher(new AppEvent("uploadPhoto.bitmap",bitmapData));				
+			}
+			private function fileReferenceSelectHandler(e:Event):void
+			{
+				fileReference.load();
+			}			
+			
+			
+			
+			private function getChild(str:String):Object  //这段代码是为了获得指定页面对应的对象
+			{
+				var obj:Object = null;
+				for each(obj in vs.getChildren())  //遍历vs中的所有子组件(即所有页面)，页面不会太多，顶多一二十个，所以这个方法不会太耗时
+				{
+					if(obj.name === str) //如果是想找的页面，就返回这个对象。比如想找到welcome.mxml，则令str="welcome"
+					{
+						break;
+					}
+				}
+				return obj;
+			}			
+			public function go2():void {				
+				var obj:Object = getChild("two_view");
+				vs.selectedChild = obj as mx.containers.Canvas;								
+			}				
+			
+			private var sucai:Array = ["assets/images/yj1.png","assets/images/yj2.png","assets/images/yj3.png","assets/images/wb1.png","assets/images/wb2.png","assets/images/wb3.png"];
+			
+			public function onSelectWeiBo(type:int):void{
+				loaderImage2.load(new URLRequest(sucai[type]));									
+			}			
+			public function onSelectYanJing(type:int):void{
+				loaderImage1.load(new URLRequest(sucai[type]));					
+			}			
+
+			public function onLoadImage1(event:Event):void{
+			
+				var bmp:BitmapData = new BitmapData(loaderImage1.width,loaderImage1.height,true,0x00000000);
+				bmp.draw(loaderImage1);				
+				dispatcher(new AppEvent("selectYanJing.bitmap",bmp));
+			}
+			public function onLoadImage2(event:Event):void{
+				
+				var bmp:BitmapData = new BitmapData(loaderImage2.width,loaderImage2.height,true,0x00000000);
+				bmp.draw(loaderImage2);				
+				dispatcher(new AppEvent("selectWeiBo.bitmap",bmp));
+			}			
+			
+		]]>
+	</fx:Script>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		.next {
+			overSkin:Embed(source="assets/images/add_icon1.png");
+			upSkin:Embed(source="assets/images/add_icon1.png");
+			downSkin:Embed(source="assets/images/add_icon1_h.png");		
+		}		
+		.yj1Btn {
+			overSkin:Embed(source="assets/images/yj1_b.png");
+			upSkin:Embed(source="assets/images/yj1_b.png");
+			downSkin:Embed(source="assets/images/yj1_b_h.png");				
+		}
+		.yj2Btn {
+			overSkin:Embed(source="assets/images/yj2_b.png");
+			upSkin:Embed(source="assets/images/yj2_b.png");
+			downSkin:Embed(source="assets/images/yj2_b_h.png");				
+		}
+		.yj3Btn {
+			overSkin:Embed(source="assets/images/yj3_b.png");
+			upSkin:Embed(source="assets/images/yj3_b.png");
+			downSkin:Embed(source="assets/images/yj3_b_h.png");				
+		}		
+		.wb1Btn {
+			overSkin:Embed(source="assets/images/wb1_b.png");
+			upSkin:Embed(source="assets/images/wb1_b.png");
+			downSkin:Embed(source="assets/images/wb1_b_h.png");				
+		}	
+		.wb2Btn {
+			overSkin:Embed(source="assets/images/wb2_b.png");
+			upSkin:Embed(source="assets/images/wb2_b.png");
+			downSkin:Embed(source="assets/images/wb2_b_h.png");				
+		}	
+		.uploadPhotoBtn {
+			overSkin:Embed(source="assets/images/bot_7.png");
+			upSkin:Embed(source="assets/images/bot_7.png");
+			downSkin:Embed(source="assets/images/bot_7_h.png");				
+		}			
+		.takePhotoBtn {
+			overSkin:Embed(source="assets/images/bot_6.png");
+			upSkin:Embed(source="assets/images/bot_6.png");
+			downSkin:Embed(source="assets/images/bot_6_h.png");				
+		}
+	</fx:Style>
+	<mx:Button id="img6" x="234" y="17" styleName="takePhotoBtn" click="takePhoto();"/>
+	<mx:Button id="img7" x="158" y="18" styleName="uploadPhotoBtn" click="uploadPhoto();"/>	
+	<mx:TextInput x="13" y="18" width="139"/>
+	<myView:menu_view>
+	</myView:menu_view>
+	<mx:Button x="364" y="209" styleName="next" click="go2();"/>
+	<mx:Image x="14" y="49" source="@Embed('assets/images/tip_text.png')"/>
+	<mx:Image x="349" y="17" source="@Embed('assets/images/sucai_new.png')"/>
+
+	<mx:Image x="10" y="125" source="@Embed('assets/images/adjust_photo.png')"/>
+	
+	<mx:Button x="354" y="23" width="66" height="66" styleName="yj1Btn" id="select_yj1" click="onSelectYanJing(0);"/>
+	<mx:Button x="354" y="97" width="66" height="66" styleName="wb1Btn" id="select_wb1" click="onSelectWeiBo(3);"/>
+	<mx:Button x="428" y="24" width="66" height="66" styleName="yj2Btn" id="select_yj2" click="onSelectYanJing(1);"/>
+	<mx:Button x="428" y="98" width="66" height="66" styleName="wb2Btn" id="select_wb2" click="onSelectWeiBo(4);"/>
+	<mx:Button x="502" y="24" width="66" height="66" styleName="yj3Btn" id="select_yj3" click="onSelectYanJing(2);"/>
+	<mx:Button x="502" y="98" width="66" height="66" styleName="wb3Btn" id="select_wb3" click="onSelectWeiBo(5);"/>
+
+</mx:Canvas>
